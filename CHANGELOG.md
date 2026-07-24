@@ -40,10 +40,27 @@ Initial release.
 - Evaluation harness `evals/runners/run_evals.py` with `--check`, `--run`, `--report`,
   and `--compare` modes; deterministic grading is explicitly limited to forbidden-pattern
   and concept-coverage checks, with human review required for quality.
+- Sixteen evaluation cases under `evals/cases/` with grading contracts under
+  `evals/expected-behaviors/` — fourteen positive cases covering the library's target
+  failure modes, and two genuinely sound negative cases for false-positive resistance.
 - Documentation: `docs/skill-authoring-guide.md` (binding authoring contract),
   `docs/evaluation-methodology.md`, `docs/architecture.md`, `docs/installation.md`,
-  `docs/security.md`, `docs/source-attribution.md`, `README.md`, `CONTRIBUTING.md`.
+  `docs/security.md`, `docs/source-attribution.md`, `docs/environment-audit.md`,
+  `docs/validation-report.md`, `docs/limitations-and-roadmap.md`, `README.md`,
+  `CONTRIBUTING.md`.
 - MIT license.
+
+### Fixed during initial development
+
+- `run_evals.py` recorded an empty runner response with no grading and no error, so a run
+  in which every model call failed would have reported a clean sweep. Empty responses now
+  raise an explicit error and the exit status is nonzero when any case errors.
+- `check_skills.py` rejected valid trigger clauses that did not open with the exact words
+  "Use when" (for example "Use before a model launch"), producing a false warning against
+  `production-ml-review`.
+- The `fabricated-theorem-citation` grading contract scored a correct response `PARTIAL`
+  because two concept groups matched fixed phrases rather than the operative verb and
+  argument shape. Both were widened; see `docs/validation-report.md` §8.
 
 ### Notes
 
