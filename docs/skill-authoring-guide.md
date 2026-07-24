@@ -6,18 +6,31 @@ behave like one system.
 
 ## 1. File layout
 
+Per the Agent Skills specification (<https://agentskills.io/specification>, verified
+2026-07-23), a skill is a directory containing at minimum a `SKILL.md`:
+
 ```
 skills/<skill-name>/
-├── SKILL.md          # required, the only file always loaded
-└── reference/        # optional, loaded on demand by the model
-    └── *.md
+├── SKILL.md          # required, the only file always loaded on activation
+├── references/       # optional, loaded on demand by the model
+├── scripts/          # optional, executable code
+└── assets/           # optional, templates and resources
 ```
 
 - Directory name MUST equal the frontmatter `name`.
-- `name`: lowercase letters, digits, hyphens only.
+- `name`: 1–64 chars, lowercase alphanumeric and hyphens only, no leading/trailing hyphen,
+  **no consecutive hyphens**.
+- Reference paths are relative to the skill root and should stay **one level deep**. Avoid
+  nested reference chains.
 - One skill = one reviewing job. If a skill needs two report shapes, it is two skills.
 
 ## 2. Frontmatter
+
+Fields defined by the spec: `name` and `description` (required); `license`,
+`compatibility`, `metadata`, and `allowed-tools` (optional). There is **no top-level
+`version` field** — version lives inside `metadata` by convention. `allowed-tools` is
+hyphenated and takes a *space-separated string*, not a list; it is marked experimental and
+support varies by harness, so this library does not use it.
 
 ```yaml
 ---
@@ -26,25 +39,40 @@ description: <what it does>. Use when <concrete triggers>.
 license: MIT
 metadata:
   library: statistical-agent-skills
-  version: 1.0.0
+  version: "1.0.0"
   report: standard-review     # or: none
 ---
 ```
 
-Required: `name`, `description`. `description` is the **only** text the model sees when
-deciding whether to load the skill, so it must contain concrete trigger words a user
-would actually type ("AUROC", "backtest", "tCPA", "parallel trends"), not abstractions.
-Keep it under ~500 characters.
+`metadata` is a map of string keys to string values — quote version numbers so they are
+not parsed as floats.
+
+Constraints:
+- `description` — max 1024 characters, non-empty. It is the **only** text the model sees
+  when deciding whether to load the skill, so it must contain concrete trigger words a
+  user would actually type ("AUROC", "backtest", "tCPA", "parallel trends"), not
+  abstractions. Say both *what* it does and *when* to use it.
+- `name` — must match the directory.
 
 ## 3. Size budget (progressive disclosure)
 
+The spec describes three levels: metadata (~100 tokens, always loaded for every installed
+skill), instructions (the `SKILL.md` body, loaded on activation, **recommended under 5000
+tokens**), and resources (loaded only when the model opens them). The spec's own ceiling is
+500 lines for `SKILL.md`; this library sets a tighter budget.
+
 | File | Budget | Hard limit |
 |------|--------|-----------|
-| `SKILL.md` | 150–320 lines / ≤10 KB | 400 lines |
-| `reference/*.md` | any | — |
+| `SKILL.md` | 150–320 lines **and** ≤5000 tokens | 400 lines (spec allows 500) |
+| `references/*.md` | any | — |
+
+Budget in tokens, not bytes — tokens are what actually cost context, and a byte budget
+tight enough to feel meaningful contradicts the line budget for dense technical prose.
+Check with `python3 scripts/check_skills.py`, which estimates conservatively at 3.6
+characters per token and fails any skill over 5000.
 
 `SKILL.md` is loaded into context whenever the skill triggers; long skills tax every
-session that touches them. Push worked examples, long tables, and code into `reference/`
+session that touches them. Push worked examples, long tables, and code into `references/`
 and link to them with a one-line description of when to open them.
 
 ## 4. Required section order
