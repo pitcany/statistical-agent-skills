@@ -1,0 +1,42 @@
+id: high-auroc-poor-calibration
+skill: calibration-and-ranking
+polarity: positive
+summary: High AUROC is being offered as evidence of calibration while mean predicted probability (0.081) is roughly a third of the observed rate (0.230), and the predicted number feeds a discount budget.
+
+must_identify:
+  - States that AUROC is a function of the ranking only - invariant to any strictly monotone transformation of the scores - so it carries no information about the level of the probabilities, and rejects the colleague's inference explicitly.
+  - Quantifies the calibration-in-the-large failure - mean predicted 0.081 versus observed 0.230, roughly a 2.8x under-prediction - and states the consequence in the decision's own units - the discount formula predicted_prob * gross_margin under-spends by roughly the same factor, so the program is systematically under-invested.
+  - Identifies the 1:5 negative downsampling as the mechanism, since training on 20% of negatives shifts the fitted intercept, and gives the correction - refit or offset the intercept by log of the sampling rate, or recalibrate on an unsampled holdout.
+  - Requires level evidence before shipping - reliability curve by predicted decile, calibration intercept and slope from a regression of the outcome on the logit of the prediction, and Brier decomposed into refinement and reliability - and notes that AUPRC and AUROC do not substitute.
+  - Requires per-segment calibration (channel, recency band, prior order count) because a single global intercept fix can leave segment-level miscalibration that the spend allocation is exposed to.
+  - Recommends fitting a calibrator (Platt/logistic or isotonic) on out-of-time data with matured labels, versioning it as an artifact alongside the model, and re-checking calibration on a later window before the budget formula runs unattended.
+  - Preserves the correct positive - the ranking is genuinely good, so the model is usable for choosing WHO to target once the level is fixed; discrimination and calibration are reported as separate claims.
+must_mention_any:
+  - [rank, ranking, monotone, order-preserving, invariant, ordering]
+  - [calibration-in-the-large, calibration in the large, mean predicted, intercept, base rate, observed rate]
+  - [downsampl, negative sampling, class balance, sampling rate, prior correction, offset]
+  - [isotonic, platt, logistic recalibration, recalibrat]
+  - [reliability curve, reliability diagram, calibration curve, calibration slope, decile]
+  - [under-predict, underpredict, understate, under-spend, underspend, too low]
+forbidden_behaviors:
+  - Agrees, in any form, that AUROC 0.912 is evidence the probabilities are calibrated.
+  - Endorses shipping the budget formula before a calibration fix and a level check.
+  - Attributes the gap to model quality or to "needs a better model" rather than to the level of the predictions and the downsampling.
+  - Recommends only a threshold adjustment, which leaves the magnitude used by the budget formula wrong.
+forbidden_patterns:
+  - '(AUROC|AUC|AUPRC)[^.\n]{0,70}(confirms|shows|means|indicates|demonstrates|implies|suggests)[^.\n]{0,40}(good |well )?calibrat'
+  - '\b(model|it|this) is well[- ]calibrated'
+  - '(ship|deploy|go live|roll out)[^.\n]{0,30}(it|this|the model)[^.\n]{0,30}(as[- ]is|on monday|now)'
+  - '(0\.912|0\.91)[^.\n]{0,50}(so|therefore|hence|which means)[^.\n]{0,40}(probabilit|calibrat)'
+  - '(retrain|use) a (better|stronger|different) model[^.\n]{0,40}(fix|solve|address)[^.\n]{0,30}calibrat'
+required_severity: blocker
+notes: |
+  A correct answer states the rank-invariance of AUROC as the reason the colleague's
+  inference is invalid, quantifies the 0.081 vs 0.230 gap as calibration-in-the-large,
+  names the 1:5 downsampling as the concrete cause with the intercept correction, and
+  requires reliability curve, calibration slope/intercept and per-segment checks plus a
+  versioned calibrator before the spend formula runs. It keeps discrimination as a
+  separate, genuinely positive finding.
+  A plausible-but-wrong answer either accepts the AUROC argument, or notices the
+  miscalibration but prescribes only "pick a better threshold" - which leaves the
+  magnitude that multiplies gross_margin untouched - or blames model capacity.

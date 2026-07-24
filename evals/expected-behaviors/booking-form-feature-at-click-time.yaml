@@ -1,0 +1,39 @@
+id: booking-form-feature-at-click-time
+skill: leakage-auditor
+polarity: positive
+summary: Conversion-time booking-form fields are used as features by a model that scores at ad-click time; the offline metric is inflated and the deployed model cannot see them.
+
+must_identify:
+  - Names the decision timestamp explicitly as ad-click time (the moment the bid/score is produced), not booking time.
+  - States the time ordering for the offending features - party_size, room_nights, quoted_rate, rate_plan, lead_time_days (which depends on checkin_date) are written to crm.bookings when the booking form is completed, i.e. minutes to 60 days AFTER the click - and concludes leakage from that ordering, not from the feature names alone.
+  - Classifies this as a blocker with optimistic direction of bias, and explains that at serving time these fields are NULL or defaulted for every click, so the deployed model is a different model from the evaluated one.
+  - Notes that the LEFT JOIN makes every non-booking row NULL on those fields, so missingness itself encodes the label.
+  - Distinguishes the clean features - click_ts, campaign_id, device, geo_region, keyword_match_type, and prior_bookings_12m which is joined on as_of_date = click date - from the leaking ones rather than condemning the whole feature set.
+  - Recommends dropping or replacing the conversion-time features with click-time-available equivalents (e.g. keyword/query intent, historical campaign-level rates as of the click) and re-running the holdout before any value-based bidding change.
+must_mention_any:
+  - [party_size, room_nights, quoted_rate, booking form, rate_plan]
+  - [click time, prediction time, serving time, scoring time, decision timestamp, at serve]
+  - [leak, unavailable at, not available at, written after]
+  - [blocker]
+  - [optimistic, inflated, overstate, too good]
+forbidden_behaviors:
+  - Approves the Monday switch to value-based bidding, or calls the pipeline sound.
+  - Declares leakage purely from feature names or from the high AUROC without stating write time versus decision time.
+  - Proposes imputing the booking-form fields at serving time as a fix, as if a default value restored the evaluated model.
+  - Flags prior_bookings_12m as leakage despite the explicit as_of_date = DATE(c.click_ts) join, without evidence about how user_history is built.
+forbidden_patterns:
+  - '(ship|deploy|go live|switch)[^.\n]{0,40}(as[- ]is|as written|on monday|without change)'
+  - '\b(impute|default|fill)\w*[^.\n]{0,50}(at serv|in production|at scoring)[^.\n]{0,40}(solves|fixes|resolves|handles) (this|the (issue|problem|leak))'
+  - '(AUROC|auc)[^.\n]{0,20}0\.93[^.\n]{0,50}(so|therefore|which (means|shows)|confirms)[^.\n]{0,40}(strong|good|excellent|solid)'
+  - '(the )?(pipeline|feature job|design) (is|looks) (sound|fine|correct|reasonable)'
+required_severity: blocker
+notes: |
+  A correct answer fixes the decision timestamp at click time, builds the availability
+  table, and shows that crm.bookings rows are written at booking-form completion which is
+  strictly after the click - therefore party_size, room_nights, quoted_rate, rate_plan and
+  lead_time_days are unavailable at serve. It marks this a blocker with optimistic bias,
+  explains that the LEFT JOIN encodes the label through missingness, and leaves
+  prior_bookings_12m alone because the as_of_date join is explicit.
+  A plausible-but-wrong answer lists the same features as "suspicious" on name evidence,
+  or treats the high AUROC as the finding, or suggests imputing defaults at serving time
+  and shipping anyway.

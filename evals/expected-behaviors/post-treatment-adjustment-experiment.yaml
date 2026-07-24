@@ -1,0 +1,41 @@
+id: post-treatment-adjustment-experiment
+skill: experiment-design
+polarity: positive
+summary: An experiment analysis conditions on variables measured after assignment, destroying randomization-based identification, and the shrunken coefficient is being read as "no real effect".
+
+must_identify:
+  - Identifies pages_viewed_first_session and completed_profile as post-treatment variables measured after exposure to the checklist, and states that randomization guarantees balance only on pre-treatment variables, so conditioning on them breaks the comparison the randomization bought.
+  - Explains both mechanisms - these variables are plausibly mediators, so conditioning on them removes the indirect path the checklist works through (the adjusted coefficient is at best a controlled direct effect, not the total effect) - and conditioning on a descendant of treatment opens collider paths with unobserved user propensity, so the adjusted estimate is biased in an undetermined direction.
+  - States that the raw +2.1pp (95% CI +1.5 to +2.7) is the valid intention-to-treat estimate of the pre-registered primary metric, and that the +0.4pp is not an estimate of the checklist's effect at all.
+  - Rejects the "it was really engagement" conclusion, and notes that if the mediation question is genuinely of interest it requires sequential ignorability / a mediation design, which this test does not supply.
+  - Notes the analysis also departed from the pre-registration - the primary readout was specified before launch and the adjusted model was not - so the shrunken number is a post-hoc specification.
+  - Gives the correct variance-reduction alternative - CUPED or regression adjustment on strictly pre-treatment covariates (pre-period activity, signup channel, device, acquisition cohort), which are legitimate because they cannot be affected by the assignment.
+  - Recommends shipping on the ITT result (or at least not blocking on the adjusted one), and states what would legitimately change that decision - guardrails, novelty-effect check over a longer window, heterogeneity across channels.
+must_mention_any:
+  - [post-treatment, post treatment, after assignment, after exposure, downstream of treatment, measured after]
+  - [mediator, mediation, indirect effect, blocks the path, controlled direct effect]
+  - [collider, conditioning on a descendant, opens a path, induces bias]
+  - [ITT, intention-to-treat, intention to treat, unadjusted difference, raw difference]
+  - [CUPED, pre-period, pre-treatment covariate, pre-experiment, prior activity]
+forbidden_behaviors:
+  - Accepts the adjusted +0.4pp as the better or more accurate estimate of the checklist effect.
+  - Endorses "the effect was really engagement" as a supported conclusion.
+  - Treats controlling for engagement as legitimate variance reduction.
+  - Recommends re-running the test with more users as the fix, when the defect is the analysis specification rather than power.
+forbidden_patterns:
+  - '(adjust\w*|control\w*)[^.\n]{0,50}(engagement|pages_viewed|completed_profile)[^.\n]{0,50}(is|are|was) (fine|valid|appropriate|reasonable|good practice|correct)'
+  - '(the )?(adjusted|controlled|full) (model|estimate|coefficient|specification)[^.\n]{0,60}(is|remains|gives) (the )?(better|preferred|correct|more accurate|unbiased|cleaner)'
+  - '(effect|lift|difference)[^.\n]{0,40}(is|was) (mostly|mainly|largely|really) (driven by|explained by|due to) engagement'
+  - '(do not|don.t|should not) ship[^.\n]{0,40}(since|because)[^.\n]{0,40}(0\.4|adjusted)'
+  - '(more users|larger sample|re-?run the test)[^.\n]{0,40}(will|would) (fix|resolve|address) (this|the (issue|problem))'
+required_severity: blocker
+notes: |
+  A correct answer names the estimand (ITT effect of assignment to the checklist on day-7
+  retention), states that pages_viewed_first_session and completed_profile are realized
+  after assignment, explains mediator-blocking and collider bias with direction
+  undetermined, restores +2.1pp as the valid readout, rejects the engagement narrative,
+  and offers CUPED on pre-period covariates as the legitimate way to get the variance
+  reduction the analyst wanted.
+  A plausible-but-wrong answer treats the adjusted model as a refinement ("controlling for
+  confounders"), or hedges between the two estimates, or flags only the pre-registration
+  deviation without explaining why the adjusted coefficient is not an effect estimate.

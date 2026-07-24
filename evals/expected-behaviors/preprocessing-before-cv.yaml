@@ -1,0 +1,40 @@
+id: preprocessing-before-cv
+skill: leakage-auditor
+polarity: positive
+summary: Imputation, scaling, label-supervised feature selection and SMOTE are all fit on the full dataset before cross-validation, and the split ignores both patient identity and time.
+
+must_identify:
+  - Identifies that SelectKBest(f_classif) is fit against y on all 14,204 rows before any split, so every validation fold was used to choose the 40 features from 310 candidates - the largest single source of inflation here, and names it as label leakage into preprocessing.
+  - Identifies that SMOTE is applied to the full dataset before the folds are made, so synthetic points interpolated from validation rows appear in the training folds (and duplicated/near-duplicate rows straddle the split); notes that resampling must happen inside the training fold only, and that the reported AUROC is computed on a resampled, non-representative class distribution rather than the real 9% prevalence.
+  - Identifies that SimpleImputer and StandardScaler are also fit on all rows, a smaller but real contamination of fold statistics.
+  - Identifies entity leakage - 14,204 encounters from 9,867 patients means repeated patients, and a row-level shuffled StratifiedKFold puts the same patient in train and validation; requires grouping by patient_id (GroupKFold / StratifiedGroupKFold).
+  - Identifies that the question asked - performance on next quarter's discharges - is prospective, so a shuffled CV over a historical window is the wrong evaluation shape; requires an out-of-time split on discharge_ts.
+  - States the direction of bias as optimistic and answers the actual question: 0.891 is not a trustworthy estimate.
+  - Gives the concrete fix - put imputation, scaling, selection and (imblearn) resampling inside a Pipeline passed to cross_val_score so every step is fit on training folds only, evaluate on the untouched class balance, group by patient, and add an out-of-time holdout.
+must_mention_any:
+  - [selectkbest, feature selection, f_classif]
+  - [smote, resampl, oversampl, synthetic]
+  - [pipeline, inside the fold, within each fold, inside each training fold]
+  - [patient_id, entity, group, groupkfold, same patient]
+  - [out-of-time, out of time, temporal split, next quarter, discharge_ts, time-based]
+  - [optimistic, inflated, upward, overstate, too good]
+forbidden_behaviors:
+  - Concludes the 0.891 is trustworthy, or that the only issue is a minor one.
+  - Says scaling or imputation before the split is harmless and stops there, missing the label-supervised selection and SMOTE.
+  - Recommends collecting more data or a different classifier as the remedy instead of restructuring the pipeline.
+  - Claims leakage without stating which quantity was computed using information from the held-out rows.
+forbidden_patterns:
+  - '(scal\w+|standardiz\w+|imput\w+)[^.\n]{0,50}(before|prior to)[^.\n]{0,30}(the )?(split|cv|cross[- ]validation)[^.\n]{0,30}(is|are) (fine|harmless|not a (problem|concern)|acceptable|ok)'
+  - 'SMOTE[^.\n]{0,60}(is|are) (fine|correct|acceptable|standard practice|not a problem)'
+  - '0\.891[^.\n]{0,40}(is|remains|looks) (trustworthy|reliable|a (good|fair|reasonable) estimate)'
+  - '(collect|gather|get) more (data|samples)[^.\n]{0,40}(will|would|to) (fix|solve|address)'
+required_severity: blocker
+notes: |
+  A correct answer separates the four contaminations - supervised feature selection on all
+  rows, SMOTE before splitting, imputer/scaler fit on all rows, and a row-level shuffled
+  split over repeated patients - explains the mechanism for each, adds the out-of-time
+  point because the stated target is next quarter, states the bias is optimistic, and
+  prescribes an imblearn Pipeline plus grouped and time-based splits.
+  A plausible-but-wrong answer notices only the scaler (the textbook example), calls the
+  rest fine, or suggests a stronger model / more data rather than fixing where the fits
+  happen.

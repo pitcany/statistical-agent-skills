@@ -1,0 +1,42 @@
+id: random-split-timeseries
+skill: time-series-forecasting
+polarity: positive
+summary: A shuffled random split plus centred/unshifted rolling features makes a 4-week-ahead demand forecast evaluate itself on interpolation, and a safety-stock cut is being justified with the resulting MAPE.
+
+must_identify:
+  - States that shuffle=True interleaves future and past - test rows sit between training rows from the same SKU-DC and the same week - so the 6.2% MAPE measures interpolation within observed history, not 4-week-ahead forecasting; direction of bias is optimistic.
+  - Identifies that the evaluation horizon does not match the decision - nothing in the split is 28 days ahead of its training data, so no reported number is evidence about a 4-week-ahead forecast.
+  - Identifies the feature-side lookahead independently of the split - rolling(7, center=True) averages three days after the target date, and rolling(28) includes the target day itself; both must be shifted so every window ends strictly before the forecast origin.
+  - Prescribes rolling-origin / expanding-window backtesting with the forecast origin and 28-day horizon held fixed across folds, and a gap equal to the horizon.
+  - Requires a seasonal-naive (or naive-with-drift) baseline on the same folds before any accuracy claim, and notes the incumbent 19% planner number was not produced on a comparable evaluation.
+  - Flags that MAPE on intermittent/low-volume SKU-DC series is unstable and asymmetric, and proposes MASE or a scaled/absolute error alongside it, evaluated per series not pooled.
+  - States that the safety-stock decision depends on the forecast distribution (interval coverage at the 28-day horizon), not the point-error metric, and that no interval evidence has been produced.
+must_mention_any:
+  - [rolling origin, walk-forward, walk forward, expanding window, time-based split, out-of-time, backtest]
+  - [shuffle, shuffled, random split, randomly split]
+  - [center=True, centered, centred, shift, lag, future values, window includes]
+  - [seasonal naive, naive baseline, baseline, mase]
+  - [optimistic, inflated, understate, overstate, too good]
+  - [interval, coverage, quantile, service level, safety stock]
+forbidden_behaviors:
+  - Endorses the 15% safety-stock cut, or treats 6.2% MAPE as comparable to the planners' 19%.
+  - Recommends keeping a random or K-fold shuffled split on this data, in any form.
+  - Identifies the split problem but ignores the centred rolling window, or vice versa.
+  - Recommends a different model class as the fix while leaving the evaluation scheme in place.
+forbidden_patterns:
+  - '(random(ly)?|shuffled?)[- ]?(split|sampling|assignment)[^.\n]{0,50}(is|are|remains|would be) (fine|acceptable|okay|ok|appropriate|valid|reasonable)'
+  - '(keep|retain|leave|stick with)[^.\n]{0,40}shuffle\s*=\s*True'
+  - '(recommend|suggest|use|try)[^.\n]{0,50}KFold\([^)]{0,40}shuffle\s*=\s*True'
+  - '6\.2%?[^.\n]{0,40}(beats|better than|vs\.?)[^.\n]{0,20}19%?[^.\n]{0,40}(so|therefore|hence)'
+  - '(safe|fine|reasonable|justified) to (cut|reduce)[^.\n]{0,40}safety stock'
+required_severity: blocker
+notes: |
+  A correct answer names the estimand (28-day-ahead units per SKU-DC, feeding a service
+  level), then gives two independent defects - the shuffled split and the unshifted/centred
+  rolling features - each with its own mechanism, declares the 6.2% MAPE uninformative and
+  optimistic, and replaces it with rolling-origin backtesting at h=28 against a seasonal
+  naive baseline, with interval coverage as the quantity the safety-stock decision actually
+  needs.
+  A plausible-but-wrong answer flags shuffle=True, recommends a chronological 80/20 cut,
+  and stops - leaving the centred rolling window, the missing baseline, and the absence of
+  any interval evidence unaddressed.
