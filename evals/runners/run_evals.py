@@ -284,7 +284,12 @@ def run_cases(
             print(f"--- PROMPT for {c.id} ---\n{c.prompt}\n--- END ---")
             print("Paste response, then EOF (Ctrl-D):")
             response, err = sys.stdin.read(), None
-        grading = grade_deterministic(response, c.contract) if response else {}
+        if not err and not (response or "").strip():
+            # An empty response is a harness failure, not a silent pass. Without this the
+            # case would be recorded with no grading and no error, and a run of empty
+            # responses would look like a clean sweep.
+            err = "empty response from runner"
+        grading = grade_deterministic(response, c.contract) if (response or "").strip() else {}
         results.append(
             {
                 "id": c.id,
@@ -486,8 +491,9 @@ def main() -> int:
         for r in data["results"]
         if (r.get("grading") or {}).get("deterministic_verdict") == "FAIL"
     )
-    print(f"{failed} case(s) hit a forbidden pattern")
-    return 1 if failed else 0
+    errored = sum(1 for r in data["results"] if r.get("error"))
+    print(f"{failed} case(s) hit a forbidden pattern; {errored} case(s) errored")
+    return 1 if (failed or errored) else 0
 
 
 if __name__ == "__main__":

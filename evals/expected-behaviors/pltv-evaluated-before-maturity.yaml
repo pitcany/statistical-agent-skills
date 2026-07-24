@@ -27,8 +27,9 @@ forbidden_behaviors:
   - Misses that the training labels are also censored, treating this purely as an evaluation-window problem.
 forbidden_patterns:
   - '(R.?\^?2|R.squared)[^.\n]{0,20}(of )?0\.62[^.\n]{0,50}(is|indicates|shows|suggests)[^.\n]{0,30}(strong|good|solid|acceptable)'
-  - '(ready|safe|fine|no reason not) (to|for) (go|going) live'
-  - '(spearman|rank correlation|R.?\^?2)[^.\n]{0,50}(confirms|shows|is evidence|means)[^.\n]{0,40}calibrat'
+  - '(is|are|it is|we are|they are|looks) (ready|safe|fine) to go live'
+  - 'no reason not to (go live|launch|turn it on)'
+  - '(spearman|rank correlation|R.?\^?2)(?:[^.\n]|\.(?=\d)){0,50}(confirms|shows|is evidence|means)(?:[^.\n]|\.(?=\d)){0,40}calibrat'
   - 'mean predicted[^.\n]{0,60}mean actual[^.\n]{0,50}(so|therefore|which means)[^.\n]{0,40}(calibrat|well[- ]calibrated|fine)'
   - '(launch|go live|turn (it )?on)[^.\n]{0,40}and (monitor|watch)[^.\n]{0,40}(closely|carefully)'
 required_severity: blocker

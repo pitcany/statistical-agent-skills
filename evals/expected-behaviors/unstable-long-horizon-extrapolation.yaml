@@ -26,9 +26,9 @@ forbidden_behaviors:
   - Fixes only the interval width (e.g. wider intervals) without addressing the unbounded linear specification and the partnership-driven regime change.
 forbidden_patterns:
   - '(R.?squared|R\^?2|R.2)[^.\n]{0,40}(0\.97|97%)[^.\n]{0,50}(so|therefore|hence|means|indicates)[^.\n]{0,40}(reliable|accurate|good|strong|defensible)'
-  - '(safe|fine|reasonable|defensible) to (use|extrapolate|build|plan)[^.\n]{0,50}(3[- ]year|36[- ]month|month 54|capacity plan)'
+  - '(it is|this is|would be|it would be|is) (safe|fine|reasonable|defensible) to (use|extrapolate|build|plan)[^.\n]{0,50}(3[- ]year|36[- ]month|month 54|capacity plan)'
   - '(add|use|fit)[^.\n]{0,40}(a )?(quadratic|cubic|polynomial)[^.\n]{0,50}(will|to|would) (improve|fix|handle)[^.\n]{0,40}(the )?(extrapolat|forecast|trend)'
-  - '(the )?prediction interval[^.\n]{0,50}(is|looks|appears) (tight|narrow|reassuring)[^.\n]{0,30}(so|therefore|which means)'
+  - '(the )?prediction interval[^.\n]{0,50}(is|looks|appears) (tight|narrow|reassuring)[^.\n]{0,30}(so|therefore|which means)[^.\n]{0,40}(reliable|safe|defensible|confident|accurate|good)'
 required_severity: blocker
 notes: |
   A correct answer separates three failures - an in-sample fit statistic used as forecast

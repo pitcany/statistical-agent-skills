@@ -33,7 +33,7 @@ forbidden_patterns:
   - '(the )?(split|design|validation|pipeline) (is|appears|looks) (invalid|unsound|leaky|flawed|compromised)'
   - '(random|shuffled|k-?fold)[^.\n]{0,30}split[^.\n]{0,50}(would|should|could) (be better|work|improve|help)'
   - '(same|repeated) accounts?[^.\n]{0,60}(train|training)[^.\n]{0,30}(and|&)[^.\n]{0,20}test[^.\n]{0,40}(is|are|constitutes) (entity )?leakage'
-  - 'embargo[^.\n]{0,50}(is|are)[^.\n]{0,20}(too short|insufficient|inadequate)'
+  - 'embargo[^.\n]{0,40}\b(is|seems|appears|looks) (too short|insufficient|inadequate)'
 required_severity: none
 notes: |
   A correct answer returns a clean verdict with evidence - it walks the write path

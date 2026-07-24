@@ -24,7 +24,7 @@ forbidden_behaviors:
   - Recommends adding more covariates to the propensity model as the fix for the overlap problem.
   - Reports the +11.3pp as an effect with a caveat attached, rather than as a quantity that is not identified over the stated population.
 forbidden_patterns:
-  - '(the )?(ATE|estimate|effect|11\.3)[^.\n]{0,70}(is|appears|remains|seems) (valid|unbiased|credible|reliable|well[- ]identified|robust)'
+  - '(the )?(ATE|estimate|effect|11\.3)[^.\n]{0,70}(is|appears|remains|seems) (valid|unbiased|credible|reliable|well[- ]identified|robust)(?![^.\n]{0,50}(only|within|restricted|for the (overlap|common|region)))'
   - '(dedicated )?CSMs?[^.\n]{0,30}(cause|causes|caused|drives|drove|leads to|led to)[^.\n]{0,40}(11|renewal|lift)'
   - '(balance|standardi[sz]ed mean difference|SMD)[^.\n]{0,60}(so|therefore|hence|which means|confirms)[^.\n]{0,40}(identif|unbiased|credible|valid)'
   - '(add|include)[^.\n]{0,40}(more |additional )?(covariates|controls|variables)[^.\n]{0,50}(fix|solve|address|resolve)[^.\n]{0,30}(the )?(overlap|positivity)'

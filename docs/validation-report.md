@@ -222,7 +222,53 @@ The 8 commands are registered and resolve to the repository files through their 
 Their bodies instruct the model to invoke the corresponding skill and request the structured
 inputs listed in each command.
 
-## 6. What was NOT validated
+## 6. Rollback — executed, not merely dry-run
+
+The rollback path was tested by actually performing it, rather than asserting it works:
+
+```
+$ ./scripts/uninstall.sh --manifest ~/.claude/_superseded-statskills/manifest-20260723-195613.tsv
+20 symlink(s) removed
+  restore stat-review.md
+1 entry(ies) restored
+```
+
+Verified after rollback:
+
+- Zero of the library's skills remained in `~/.claude/skills/`.
+- `~/.claude/commands/stat-review.md` was restored as a real file, and its content was
+  confirmed to be the original ECC command (`description: Statistical code review — ...
+  Invokes stat-code-smell-detector + stat-assumptions-auditor ...`).
+- The repository itself was untouched.
+
+The library was then reinstalled and the final state re-verified: 12 skills linked, 8
+commands linked, and the ECC `stat-review.md` preserved in the new backup directory
+`~/.claude/_superseded-statskills/20260723-201050/` with manifest
+`manifest-20260723-201050.tsv`.
+
+The now-empty backup directory from the first install, and its stale manifest, were removed
+so exactly one manifest is authoritative. **The current rollback command is:**
+
+```bash
+~/Projects/statistical-agent-skills/scripts/uninstall.sh \
+  --manifest ~/.claude/_superseded-statskills/manifest-20260723-201050.tsv
+```
+
+## 7. Harness grading discrimination
+
+The deterministic grader was tested against the `sound-temporal-split` contract with two
+synthetic responses:
+
+| Response | Verdict | Behavior |
+|---|---|---|
+| Manufactured defect ("I found target leakage… embargo is too short… `[blocker]`… use a random split") | `FAIL` | 3 forbidden patterns caught, keyword groups failed |
+| Clean verdict enumerating what was audited, parking the append-only guarantee as unverifiable | `PASS` | 0 violations, all keyword groups hit |
+
+This confirms the forbidden-pattern regexes fire on the intended failure modes rather than
+being decorative. It does **not** confirm they can distinguish a fluent wrong answer from a
+correct one — see `docs/evaluation-methodology.md`.
+
+## 8. What was NOT validated
 
 Stated plainly so the gaps are not mistaken for coverage:
 

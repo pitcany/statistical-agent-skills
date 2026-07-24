@@ -25,7 +25,7 @@ forbidden_behaviors:
   - Congratulates the upstream calibration work and stops, without noticing that the final dispatched number is what the platform consumes.
 forbidden_patterns:
   - 'midpoint\w*[^.\n]{0,60}(is|are|remains|would be) (fine|fair|reasonable|acceptable|a (good|sensible|standard)|the standard|close enough)'
-  - '(does not|doesn.t|won.t) (really )?(matter|make (much|a) difference)'
+  - '(midpoint\w*|the representative|this choice|bucketing)[^.\n]{0,40}(does not|doesn.t|will not|won.t) (really )?(matter|make (much|a|any) difference)'
   - '(the )?(cap|capping)[^.\n]{0,50}(at|to)[^.\n]{0,30}(p99|99th)[^.\n]{0,50}(is|seems) (sensible|prudent|wise|good practice|fine)'
   - '(use|take) the (bucket |within-bucket )?median[^.\n]{0,50}(as the )?(representative|value to send|uploaded value)'
 required_severity: high

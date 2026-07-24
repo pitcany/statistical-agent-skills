@@ -24,10 +24,10 @@ forbidden_behaviors:
   - Attributes the gap to model quality or to "needs a better model" rather than to the level of the predictions and the downsampling.
   - Recommends only a threshold adjustment, which leaves the magnitude used by the budget formula wrong.
 forbidden_patterns:
-  - '(AUROC|AUC|AUPRC)[^.\n]{0,70}(confirms|shows|means|indicates|demonstrates|implies|suggests)[^.\n]{0,40}(good |well )?calibrat'
+  - '(AUROC|AUC|AUPRC)(?:[^.\n]|\.(?=\d)){0,70}(confirms|shows|means|indicates|demonstrates|implies|suggests)(?:[^.\n]|\.(?=\d)){0,45}(good |well )?calibrat'
   - '\b(model|it|this) is well[- ]calibrated'
-  - '(ship|deploy|go live|roll out)[^.\n]{0,30}(it|this|the model)[^.\n]{0,30}(as[- ]is|on monday|now)'
-  - '(0\.912|0\.91)[^.\n]{0,50}(so|therefore|hence|which means)[^.\n]{0,40}(probabilit|calibrat)'
+  - '(you can|we can|safe to|fine to|ok to|okay to|i (would|d) )(ship|deploy|go live|roll out)[^.\n]{0,40}(as[- ]is|on monday|now|today)'
+  - '(0\.912|0\.91)[^.\n]{0,40}(so|therefore|hence|which means|implies)[^.\n]{0,30}(the )?(probabilities|predictions|scores) (are|look|seem) (good|fine|calibrated|reliable|trustworthy)'
   - '(retrain|use) a (better|stronger|different) model[^.\n]{0,40}(fix|solve|address)[^.\n]{0,30}calibrat'
 required_severity: blocker
 notes: |

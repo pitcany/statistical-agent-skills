@@ -29,7 +29,7 @@ forbidden_behaviors:
 forbidden_patterns:
   - '\A[\s\S]{0,300}(pip install|import statsmodels|from statsmodels|ExponentialSmoothing\(|UnobservedComponents\()'
   - '(state[- ]space|local linear trend|LLT)[^.\n]{0,50}(is|are) (strictly )?(better|superior|more principled|more rigorous|the right choice)\b'
-  - '(AIC|BIC)[^.\n]{0,50}(favou?rs|prefers|selects)[^.\n]{0,40}(so|therefore|hence|use)'
+  - '(AIC|BIC)[^.\n]{0,50}(favou?rs|prefers|selects)[^.\n]{0,40}(so|therefore|hence)[^.\n]{0,30}(use|choose|pick|go with|prefer)'
   - '(use|go with|choose) (ETS|the local linear trend)[^.\n]{0,60}(because|since) it is (more )?(standard|popular|common|widely used|simpler to)'
   - '\[blocker\]'
 required_severity: medium
