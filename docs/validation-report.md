@@ -216,11 +216,38 @@ Consequences recorded honestly:
   `sound-cluster-randomized-test`) require exactly this scrutiny before their results can be
   trusted, and are flagged accordingly in the limitations.
 
-## 5. Command invocation
+## 5. Command invocation — executed end-to-end
 
 The 8 commands are registered and resolve to the repository files through their symlinks.
-Their bodies instruct the model to invoke the corresponding skill and request the structured
-inputs listed in each command.
+One was exercised against a real file rather than only inspected.
+
+A 13-line script was written with two deliberate defects — `StandardScaler().fit_transform(X)`
+applied to the full dataset before splitting, and `train_test_split(..., shuffle=True)` on a
+table whose rows carry `signup_ts` — and reviewed with:
+
+```
+$ claude -p "/audit-leakage demo_leak.py"
+```
+
+The command resolved, invoked `leakage-auditor`, and returned the structured report with
+numbered sections. It:
+
+- reported both planted defects as **blockers**, "both observed directly in code order,
+  both optimistically biased";
+- found a **third** defect that was not planted — the feature set is admitted by a blanket
+  `df.drop(columns=[label])`, so no mechanism in the code could exclude a post-decision
+  column, making the audit **non-closable** without the schema;
+- opened by stating that `signups.csv` was absent from the working directory and that this
+  constrains the availability table, "noted explicitly below rather than papered over";
+- built the §2 material-reviewed table marking each artifact observed or absent, and
+  correctly excluded an unrelated `evalrun.log` in the same directory as not evidence;
+- marked the decision timestamp as **inferred, not observed**, and stated how the audit
+  would change under the alternative reading (scoring at day 7 rather than at signup);
+- noted that the script computes no metric at all — `Xte`/`yte` are never used and the
+  fitted estimator is discarded — so there is currently nothing to trust or distrust.
+
+The last two points are the behavior the authoring contract's evidence-tier and
+"ask, don't assume" rules were written to produce.
 
 ## 6. Rollback — executed, not merely dry-run
 
