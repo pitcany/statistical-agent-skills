@@ -272,42 +272,74 @@ def run_claude_cli(prompt: str, model: str | None, timeout: int) -> tuple[str, s
     return proc.stdout, None
 
 
+def _run_case(c: Case, runner: str, model: str | None, timeout: int) -> dict:
+    """Run one case and grade it deterministically. Safe to call concurrently for the
+    claude-cli runner (each call is an isolated subprocess); the stdin runner is
+    inherently serial and must be run with jobs=1."""
+    if runner == "claude-cli":
+        response, err = run_claude_cli(c.prompt, model, timeout)
+    else:
+        print(f"--- PROMPT for {c.id} ---\n{c.prompt}\n--- END ---")
+        print("Paste response, then EOF (Ctrl-D):")
+        response, err = sys.stdin.read(), None
+    if not err and not (response or "").strip():
+        # An empty response is a harness failure, not a silent pass. Without this the
+        # case would be recorded with no grading and no error, and a run of empty
+        # responses would look like a clean sweep.
+        err = "empty response from runner"
+    grading = grade_deterministic(response, c.contract) if (response or "").strip() else {}
+    return {
+        "id": c.id,
+        "skill": c.skill,
+        "polarity": c.polarity,
+        "tags": c.tags,
+        "prompt": c.prompt,
+        "response": response,
+        "error": err,
+        "grading": grading,
+        "contract": c.contract,
+        "human": {"verdict": None, "notes": "", "rubric_scores": {}},
+    }
+
+
 def run_cases(
-    cases: list[Case], runner: str, model: str | None, timeout: int
+    cases: list[Case], runner: str, model: str | None, timeout: int, jobs: int = 1
 ) -> dict:
-    results = []
-    for i, c in enumerate(cases, 1):
-        print(f"[{i}/{len(cases)}] {c.id} ...", flush=True)
-        if runner == "claude-cli":
-            response, err = run_claude_cli(c.prompt, model, timeout)
-        else:
-            print(f"--- PROMPT for {c.id} ---\n{c.prompt}\n--- END ---")
-            print("Paste response, then EOF (Ctrl-D):")
-            response, err = sys.stdin.read(), None
-        if not err and not (response or "").strip():
-            # An empty response is a harness failure, not a silent pass. Without this the
-            # case would be recorded with no grading and no error, and a run of empty
-            # responses would look like a clean sweep.
-            err = "empty response from runner"
-        grading = grade_deterministic(response, c.contract) if (response or "").strip() else {}
-        results.append(
-            {
-                "id": c.id,
-                "skill": c.skill,
-                "polarity": c.polarity,
-                "tags": c.tags,
-                "prompt": c.prompt,
-                "response": response,
-                "error": err,
-                "grading": grading,
-                "contract": c.contract,
-                "human": {"verdict": None, "notes": "", "rubric_scores": {}},
-            }
-        )
-        if err:
-            print(f"    error: {err}")
-        elif grading:
-            print(f"    deterministic: {grading['deterministic_verdict']}")
+    if runner == "stdin" and jobs != 1:
+        # Interleaving prompts to a shared stdin is unusable; force serial.
+        print("note: --jobs is ignored for the stdin runner (forcing serial)")
+        jobs = 1
+
+    by_id: dict[str, dict] = {}
+    if jobs <= 1:
+        for i, c in enumerate(cases, 1):
+            print(f"[{i}/{len(cases)}] {c.id} ...", flush=True)
+            r = _run_case(c, runner, model, timeout)
+            by_id[c.id] = r
+            if r["error"]:
+                print(f"    error: {r['error']}")
+            elif r["grading"]:
+                print(f"    deterministic: {r['grading']['deterministic_verdict']}")
+    else:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        print(f"running {len(cases)} cases, {jobs} at a time", flush=True)
+        with ThreadPoolExecutor(max_workers=jobs) as ex:
+            futs = {ex.submit(_run_case, c, runner, model, timeout): c.id for c in cases}
+            done = 0
+            for fut in as_completed(futs):
+                r = fut.result()
+                by_id[r["id"]] = r
+                done += 1
+                tag = (
+                    f"error: {r['error']}"
+                    if r["error"]
+                    else (r["grading"] or {}).get("deterministic_verdict", "—")
+                )
+                print(f"[{done}/{len(cases)}] {r['id']}: {tag}", flush=True)
+
+    # Preserve the input (sorted) case order in the output regardless of completion order.
+    results = [by_id[c.id] for c in cases if c.id in by_id]
 
     return {
         "meta": {
@@ -316,6 +348,7 @@ def run_cases(
             "model": model or "harness-default",
             "harness_version": "1.0.0",
             "library_version": "1.0.0",
+            "jobs": jobs,
             "case_count": len(cases),
             "note": (
                 "Deterministic verdicts check keyword coverage and forbidden patterns "
@@ -449,6 +482,12 @@ def main() -> int:
     ap.add_argument("--runner", choices=["claude-cli", "stdin"], default="claude-cli")
     ap.add_argument("--model", default=None, help="model id passed to the runner")
     ap.add_argument("--case", action="append", dest="cases", help="run only this case id")
+    ap.add_argument(
+        "--jobs",
+        type=int,
+        default=1,
+        help="concurrent cases (claude-cli runner only; each is an isolated subprocess)",
+    )
     ap.add_argument("--timeout", type=int, default=300)
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
@@ -477,7 +516,7 @@ def main() -> int:
     if args.check:
         return check_structure(cases)
 
-    data = run_cases(cases, args.runner, args.model, args.timeout)
+    data = run_cases(cases, args.runner, args.model, args.timeout, args.jobs)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     stamp = data["meta"]["timestamp"].replace(":", "-")
     out = args.out or RESULTS_DIR / f"{stamp}.json"

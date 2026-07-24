@@ -4,21 +4,29 @@
 
 ### Evaluation
 
-1. **The suite has not been run to completion against a model.** All 16 cases are
-   structurally valid and one has been exercised live end-to-end; a full scored run with
-   human rubric grading has not been performed. Until it is, the library's *measured*
-   quality rests on four ad-hoc end-to-end tests (see `docs/validation-report.md`).
-2. **False-positive resistance is untested.** The two negative cases exist but have not
-   been scored. This matters more than it sounds: a reviewer that flags everything scores
-   perfectly on positive cases and is useless in practice.
-3. **Deterministic grading cannot assess reasoning quality.** It detects missing concepts
+1. ~~The suite has not been run to completion against a model.~~ **Done 2026-07-24** — full
+   16-case scored run against `claude-fable-5`, 16/16 pass on the human rubric (mean
+   11.94/12), 0 forbidden-pattern violations. See `docs/eval-run-2026-07-24.md`. The
+   remaining evaluation limitations below still hold.
+2. ~~False-positive resistance is untested.~~ **Tested 2026-07-24** — both negative cases
+   passed; neither sound design was assigned a manufactured blocker (`sound-temporal-split`
+   scored 11/12, its one docked point being a mild over-cautious severity tag, not a false
+   blocker). Still single-model, single-run.
+3. **Only one model has been evaluated.** The run used `claude-fable-5`. A weaker model would
+   plausibly score lower, and the suite's power to *discriminate* weak models from strong
+   ones is uncharacterized. Run with a lower `--model` and `--compare`.
+4. **Deterministic grading cannot assess reasoning quality.** It detects missing concepts
    and forbidden assertions. It cannot distinguish a correct leakage argument from a fluent
-   wrong one. The human rubric is not optional.
-4. **Negative cases are only as good as their author's care.** Demonstrated the hard way
+   wrong one. The human rubric is not optional — the run confirmed this directly: 4 cases
+   scored deterministic PARTIAL (keyword-phrasing misses) yet passed the rubric cleanly.
+5. **Single-rater grading.** The rubric was applied by one grader. With one rater, scores
+   drift; a second independent pass on a sample is the standard check, not yet done.
+6. **Multi-turn robustness untested.** Every case is single-turn; holding position under
+   pushback is not covered.
+7. **Negative cases are only as good as their author's care.** Demonstrated the hard way
    during validation: a hand-written "sound" test case contained a genuine bi-temporal
    defect the author did not intend, and the model was right to flag it. Any negative case
    must be audited at least as carefully as the reviewer will audit it.
-5. **No inter-rater reliability process.** With a single human grader, rubric scores drift.
 
 ### Coverage
 

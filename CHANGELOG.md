@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Skill
 versions are tracked per skill in each `SKILL.md` under `metadata.version`.
 
+## [Unreleased]
+
+### Added
+
+- `run_evals.py --jobs N` runs cases concurrently (claude-cli runner only; each case is an
+  isolated subprocess). Serial (`--jobs 1`) remains the default and unchanged. Output
+  preserves input case order regardless of completion order, and records `jobs` in the run
+  metadata.
+
+### Validated
+
+- First full scored run of the 16-case suite against `claude-fable-5`, one fresh session per
+  case (automatic skill selection exercised): 16/16 pass the human rubric (mean 11.94/12),
+  0 forbidden-pattern violations, both false-positive-resistance negatives passed. Recorded
+  in `docs/eval-run-2026-07-24.md`; `docs/validation-report.md` and
+  `docs/limitations-and-roadmap.md` updated to reflect the closed gaps.
+
 ## [1.0.0] - 2026-07-23
 
 Initial release.

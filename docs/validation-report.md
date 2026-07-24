@@ -346,20 +346,26 @@ tuned only against one model's phrasing will drift toward measuring vocabulary i
 reasoning. The other 15 contracts have not been through this correction cycle and should be
 expected to contain similar literal-phrasing brittleness on first live run.
 
-## 9. What was NOT validated
+## 9. Full suite run — 2026-07-24
+
+The gaps flagged in the first four items below were subsequently closed by a complete scored
+run of all 16 cases against `claude-fable-5`, one fresh session per case (automatic skill
+selection exercised), graded deterministically and against the human rubric. Result: **16/16
+pass the rubric (15 at 12/12, one at 11/12, mean 11.94), 0 forbidden-pattern violations**,
+including both false-positive-resistance negatives. Full breakdown, including the one docked
+point and an honest list of what the run still does not establish, is in
+`docs/eval-run-2026-07-24.md`.
+
+## 10. What remains NOT validated
 
 Stated plainly so the gaps are not mistaken for coverage:
 
-- **The full evaluation suite has not been run against a model.** The harness's `--check`
-  mode validates case structure; a scored `--run` across all cases with human rubric grading
-  is the next step and has not been performed.
-- **Multi-turn behavior is untested.** Every test above is single-turn. Whether a review
-  holds its position under pushback ("are you sure? we've always done it this way") is
-  arguably the more important property and is not covered by static cases.
-- **Only one automatic-selection scenario was run end-to-end.** Eleven of the twelve skills
-  have not been individually verified to trigger from an unprompted realistic query.
-- **Negative-case behavior (false-positive resistance) is untested against a model.** The
-  sound-design cases exist but have not been scored.
+- **Only one model has been evaluated** (`claude-fable-5`). The suite's power to discriminate
+  a weak model from a strong one is uncharacterized; run a lower `--model` and `--compare`.
+- **Single-rater grading.** The rubric was applied by one grader in one pass; no inter-rater
+  check has been done.
+- **Multi-turn behavior is untested.** Every case is single-turn. Whether a review holds its
+  position under pushback is arguably the more important property and is not covered.
 - **Cross-skill contention with the pre-existing ECC statistics skills is unmeasured.** Both
   sets are installed; which one the model selects for an ambiguous query has not been
   characterized.
