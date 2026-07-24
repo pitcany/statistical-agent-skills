@@ -1,0 +1,43 @@
+id: unstable-long-horizon-extrapolation
+skill: time-series-forecasting
+polarity: positive
+summary: An 18-point linear trend is extrapolated 36 months beyond the data to a value exceeding physical capacity, with in-sample R-squared and a model-conditional prediction interval offered as evidence.
+
+must_identify:
+  - States that R-squared 0.9714 is an in-sample fit statistic for a trend line and is not evidence of forecast accuracy at any horizon, let alone at h = 36; a monotone series will produce a high R-squared against t almost regardless of the true dynamics.
+  - States the extrapolation ratio explicitly - 18 observations used to predict 36 months beyond the last one, i.e. twice the observed span - and that no data constrain the model outside the observed range of month_index.
+  - Explains why the +/-275 prediction interval is misleadingly narrow - it is conditional on the linear model being exactly true and on homoscedastic independent errors; it contains no term for the possibility that the trend specification itself is wrong, which is the dominant uncertainty at h = 36.
+  - Identifies the falsifying constraint - the point forecast of 3,977 exceeds the 3,000/month physical throughput of the current network, so the model is forecasting a state the system cannot occupy; a growth model used for capacity planning needs a saturation/ceiling term (damped trend, logistic or other S-curve with a stated carrying capacity) rather than an unbounded line.
+  - Identifies the structural cause of the observed slope - the corporate-partnerships channel launched at month 5 and is now fully rolled out - so the sample slope reflects a one-off step-plus-ramp that will not continue; fitting a single line across a regime change and projecting it forward is the substantive error.
+  - Requires the diagnostics that would show this - residuals versus time / ACF of residuals for autocorrelation (which invalidates the OLS standard errors and hence the interval), and a fit on a pre-partnership subsample versus post, or a segmented/level-shift model.
+  - Notes 18 monthly points cannot separate trend from annual seasonality (less than two cycles), so any seasonal component is currently absorbed into the slope.
+  - Prescribes the honest alternative - present a scenario range (conservative / base / stretch) with explicitly stated assumptions about the partnership channel and capacity ceiling, evaluate any candidate model by rolling-origin backtesting at the horizons that exist in the data, and treat a 3-year number as a planning scenario rather than a forecast.
+must_mention_any:
+  - [extrapolat, outside the range, beyond the data, out-of-sample range]
+  - [damped, saturat, logistic, s-curve, ceiling, cap, carrying capacity, plateau]
+  - [prediction interval, uncertainty, scenario, range, understate]
+  - [3,000, 3000, capacity, physically, implausible, exceeds]
+  - [r-squared, r squared, r2, in-sample fit, in sample]
+  - [partnership, regime, one-off, structural, level shift, ramp]
+forbidden_behaviors:
+  - Endorses using the month-54 number for the capacity plan, or treats the tight prediction interval as reassurance.
+  - Cites the high R-squared as support for the forecast.
+  - Recommends a quadratic or higher-order polynomial trend to "fit better", which worsens extrapolation.
+  - Fixes only the interval width (e.g. wider intervals) without addressing the unbounded linear specification and the partnership-driven regime change.
+forbidden_patterns:
+  - '(R.?squared|R\^?2|R.2)[^.\n]{0,40}(0\.97|97%)[^.\n]{0,50}(so|therefore|hence|means|indicates)[^.\n]{0,40}(reliable|accurate|good|strong|defensible)'
+  - '(safe|fine|reasonable|defensible) to (use|extrapolate|build|plan)[^.\n]{0,50}(3[- ]year|36[- ]month|month 54|capacity plan)'
+  - '(add|use|fit)[^.\n]{0,40}(a )?(quadratic|cubic|polynomial)[^.\n]{0,50}(will|to|would) (improve|fix|handle)[^.\n]{0,40}(the )?(extrapolat|forecast|trend)'
+  - '(the )?prediction interval[^.\n]{0,50}(is|looks|appears) (tight|narrow|reassuring)[^.\n]{0,30}(so|therefore|which means)'
+required_severity: blocker
+notes: |
+  A correct answer separates three failures - an in-sample fit statistic used as forecast
+  evidence, an unbounded linear form extrapolated twice the observed span, and a slope that
+  is an artifact of a now-completed partnership rollout - then points at the capacity
+  ceiling as external falsification of the point forecast, explains why the OLS prediction
+  interval is model-conditional and far too narrow (likely with autocorrelated residuals),
+  and replaces the single number with explicit scenarios under a saturating growth
+  assumption.
+  A plausible-but-wrong answer says "linear extrapolation is risky, widen your intervals"
+  or proposes a fancier curve fit, without noticing the capacity constraint, the
+  partnership regime change, or that R-squared is answering a different question entirely.

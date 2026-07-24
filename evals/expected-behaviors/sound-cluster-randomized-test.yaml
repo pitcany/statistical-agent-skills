@@ -1,0 +1,52 @@
+id: sound-cluster-randomized-test
+skill: experiment-design
+polarity: negative
+summary: A correctly specified cluster-randomized experiment - randomization unit matches the clustering unit, CR2 SEs, passed SRM, pre-registered primary metric, ICC-based power, single readout; the review must confirm it rather than invent a defect.
+
+must_identify:
+  - States that the design is sound in the audited respects and that no blocker or high-severity defect is identified, rather than hedging into an implied problem.
+  - Names the estimand correctly - the ITT effect of assigning a store to the new menu on average check per transaction, with the store as the unit of randomization and the transaction as the unit of observation.
+  - Confirms the randomization/analysis unit alignment - randomization is at store, standard errors are clustered at store, so the dependence induced by randomizing whole stores is accounted for and the SEs are not understated; notes 120 clusters with CR2 is comfortably above the small-cluster range where CRVE degrades, and that CR2 is the appropriate small-sample correction.
+  - Confirms the power analysis is coherent - ICC was estimated from pre-period store-week data rather than assumed, and the MDE of 1.7% is consistent with the reported CI half-width, so the observed +1.8% is not a below-MDE result being over-read.
+  - Confirms the SRM check is at the right level - 60/60 stores as assigned is the randomization unit, and the transaction-count comparison is a supplementary balance check rather than the SRM test itself; the passed check is evidence against assignment or logging faults.
+  - Confirms multiplicity is handled - one pre-registered primary metric so no correction is needed on it, Holm across the two guardrails, and a single pre-declared readout at week 4 so no peeking or sequential-boundary correction is required.
+  - Confirms the interference/SUTVA argument is stated and plausible - 10-mile separation, no shared catchment, in-store-only change with no advertising - and does not invent a spillover concern the design has already addressed.
+  - Confirms the attrition handling is correct - the three renovation-closed stores are retained under ITT with their observed weeks, per a pre-declared rule, so no post-randomization exclusion occurred.
+  - Raises remaining items as explicit questions rather than findings - e.g. whether the strata dummies used in the regression are the same strata used to randomize, how the transaction-level average check handles per-store transaction-count weighting (store-weighted versus transaction-weighted estimands can differ), whether four weeks is long enough for a novelty effect to decay, and that the 120 corporate-owned stores may not represent the 1,100 stores the rollout targets - each phrased as a scope/generalizability question, not a defect.
+must_mention_any:
+  - [sound, valid, well-designed, well designed, no blocker, no defect, nothing wrong, no major issue]
+  - [cluster, cluster-robust, clustered standard errors, CR2, CRVE]
+  - [SRM, sample ratio]
+  - [pre-registered, pre-registration, pre-declared, pre registered]
+  - [ICC, intraclass, MDE, power]
+  - [ITT, intention-to-treat, intention to treat]
+forbidden_behaviors:
+  - Reports a blocker or high-severity design defect.
+  - Claims the standard errors are wrong, or that clustering was omitted or done at the wrong level.
+  - Claims a sample ratio mismatch, peeking, or multiple-comparisons violation is present.
+  - Claims the analysis unit mismatches the randomization unit, or recommends randomizing at transaction or customer level.
+  - Claims the three renovation-closed stores constitute differential attrition invalidating the result, when they are retained under a pre-declared ITT rule.
+  - Declares the test underpowered despite the observed effect exceeding the stated MDE and a CI excluding zero.
+  - Presents generalizability to the other 980 stores as a defect in the experiment rather than a scope limitation on the rollout decision.
+forbidden_patterns:
+  - '\[blocker\]'
+  - '(should|must|need to|ought to) (use|switch to|randomi[sz]e at)[^.\n]{0,40}(user|customer|transaction)[- ]level'
+  - '(this|the) (design|experiment|test|analysis) (is|was|appears) (invalid|flawed|unsound|underpowered|broken|compromised)'
+  - '(you|they|the team) (are|is|were|was) peeking'
+  - 'sample ratio mismatch[^.\n]{0,40}(is|was) (present|detected|found|likely)'
+  - '(standard errors|SEs)[^.\n]{0,50}(are|were) (not clustered|understated|wrong|too small|incorrect)'
+  - '(differential )?attrition[^.\n]{0,60}(invalidates|biases|compromises)[^.\n]{0,40}(the )?(result|estimate|test)'
+required_severity: none
+notes: |
+  A correct answer states the estimand, walks the checklist - randomization unit equals
+  clustering unit, CR2 with 120 clusters, ICC-based power with an MDE consistent with the
+  reported interval, SRM at the store level passed, single pre-registered primary metric
+  with Holm on guardrails, one readout, an explicit SUTVA argument, pre-declared ITT
+  attrition handling - and returns a clean verdict. Genuine open items (transaction- versus
+  store-weighted estimand, novelty decay over four weeks, whether 120 corporate stores
+  represent the 1,100-store estate) belong in the questions section as scope limitations,
+  not as defects.
+  A plausible-but-wrong answer manufactures a finding to look rigorous - "your SEs should be
+  clustered" (they are), "you may have an SRM" (it passed), "attrition invalidates the ITT"
+  (it was pre-declared and retained), or "underpowered at 120 clusters" (the MDE was
+  computed with the measured ICC and the observed effect exceeds it).

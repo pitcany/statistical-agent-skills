@@ -1,0 +1,42 @@
+id: delayed-conversion-outcomes
+skill: adtech-value-optimization
+polarity: positive
+summary: Recent clicks are right-censored but labelled zero, so a nightly-retrained model on a 30-day window systematically understates conversion and its dispatched values spiral downward.
+
+must_identify:
+  - States that a click without a signed contract at pull time is right-censored, not a negative, and quantifies it from the supplied lag curve - at 30 days only 37% of eventual signings have occurred, so roughly 63% of true positives in the training window are labelled 0, and the fraction mislabelled is worst for the most recent days in the window.
+  - Concludes the direction of bias - predicted p(sign) and therefore the dispatched dollar value are systematically too low - and explains this is exactly the observed symptom, not noise.
+  - Explains the feedback loop - understated values are uploaded, the platform bids down, traffic composition changes, and the next night's training set is drawn from the shifted traffic, so the drift is self-reinforcing rather than self-correcting; the flat matured CRM close rate is the evidence that the model, not the business, is moving.
+  - Distinguishes the two clocks - the 30-day attribution/conversion window is a platform crediting rule, while the outcome maturity window (about 90-120 days here) is when the label is knowable - and states that they have been conflated.
+  - Prescribes the training fix - restrict training labels to cohorts past a maturity cutoff derived from the lag curve (e.g. 90 days for ~90% maturity), or model the delay explicitly with a delayed-feedback / survival formulation (time-to-conversion hazard, or importance-weighting by the estimated probability that a conversion would have been observed by the censoring time), so recent rows are treated as censored rather than negative.
+  - Addresses the resulting freshness tension explicitly - training only on matured cohorts means the model lags the market, so recommends either the delayed-feedback model or a matured-label model plus monitored recency drift, rather than silently accepting stale data.
+  - Recommends measuring the maturity window from data (the cumulative lag curve, refreshed periodically and cut by channel/campaign) instead of assuming it, and monitoring label maturity of every training run.
+  - Notes that the value being uploaded is a prediction of an outcome that has not yet matured, and that the model should be evaluated against matured labels only.
+must_mention_any:
+  - [censor, right-censored, right censored]
+  - [matur, maturity cutoff, matured label, maturity window]
+  - [delayed feedback, delayed-feedback, survival, hazard, time-to-conversion, time to conversion]
+  - [understate, pessimistic, downward, biased low, too low, shrink]
+  - [feedback loop, self-reinforcing, spiral, vicious cycle, self-confirming]
+  - [attribution window, conversion window, 30-day window]
+forbidden_behaviors:
+  - Concludes the drift is noise, seasonality, or normal model variance.
+  - Endorses labelling not-yet-converted recent clicks as zero.
+  - Proposes widening the attribution window as the remedy, conflating the crediting rule with label maturity.
+  - Proposes only retraining more often, a different learner, or recalibration on the same censored labels.
+forbidden_patterns:
+  - '(label\w*|treat\w*|cod\w+)[^.\n]{0,50}non[- ]?convert\w+[^.\n]{0,30}as (0|zero)[^.\n]{0,40}(is|are) (fine|correct|standard|acceptable|normal)'
+  - '(this|it) (is|looks like|sounds like) (just )?(noise|random variation|normal)'
+  - '(extend|widen|increase)[^.\n]{0,30}(the )?(attribution|conversion) window[^.\n]{0,50}(solves|fixes|resolves|addresses)'
+  - '(just|simply|only) (retrain|train)[^.\n]{0,40}(more often|nightly|daily|on more data)[^.\n]{0,40}(fix|solve|address)'
+required_severity: blocker
+notes: |
+  A correct answer reads the lag curve as a censoring statement (37% observed at day 30),
+  derives the downward bias and shows it explains both symptoms, separates the 30-day
+  attribution window from the ~90-day maturity window, and prescribes either a maturity
+  cutoff on training cohorts or an explicit delayed-feedback/survival treatment of censored
+  rows - while acknowledging the freshness cost of the former. It calls out the
+  bid-feedback loop as the reason the drift compounds.
+  A plausible-but-wrong answer notices "conversions are delayed" and suggests extending the
+  attribution window or retraining less frequently, without ever saying that the zeros are
+  censored observations or that the resulting bias is one-directional and compounding.

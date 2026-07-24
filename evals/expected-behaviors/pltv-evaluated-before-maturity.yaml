@@ -1,0 +1,44 @@
+id: pltv-evaluated-before-maturity
+skill: adtech-value-optimization
+polarity: positive
+summary: A 180-day pLTV model is evaluated on cohorts only 21 days old, so the holdout label is partial revenue, and a $410k/month tROAS go-live is proposed on that evidence.
+
+must_identify:
+  - States the disqualifying fact - a cohort acquired 21 days ago cannot supply a 180-day label, so the holdout "actual" is first-21-day revenue and every reported number measures prediction of 21-day revenue, not of the stated 180-day target.
+  - Rejects the user's calibration argument specifically - mean predicted $34.10 against mean actual $33.60 compares a 180-day prediction to a 21-day partial observation, so the apparent agreement is evidence that the model is predicting something close to short-horizon revenue, which is a red flag rather than reassurance; it is not calibration-in-the-large on the target.
+  - States the direction of error - dollar values dispatched to the platform will understate realized LTV, and will be biased toward subscribers whose revenue arrives early, so the platform will systematically underbid on slower-maturing but ultimately valuable cohorts.
+  - Notes that the training labels have the same defect - "revenue to date" for cohorts acquired as recently as Apr 2026 is also immature, so the training target is inconsistent across cohorts (older rows carry full 180-day revenue, newer rows carry partial), which is a censoring problem, not just an evaluation problem.
+  - Distinguishes ranking evidence from dollar calibration - R-squared and Spearman are fit and ordering evidence; tROAS consumes the magnitude, and no calibration-in-the-large, calibration slope, or per-segment calibration on matured labels has been produced.
+  - Names the required holdout - out-of-time cohorts at least 180 days old, labels fully matured, reporting calibration-in-the-large with an interval, calibration slope over predicted-value deciles, and calibration by the segments the platform allocates across (platform, campaign, geo, device, new vs returning).
+  - Applies the production gate and reports it as unmet - the calibrator has not been evaluated on matured labels, no versioned calibration artifact is described, and no spend owner approval with expected direction of spend change is described - so go-live is a blocker and the incumbent flat $120 remains the fallback until the gate passes.
+  - Requires live randomized validation (geo or campaign split, run for at least one full maturity window, with pre-declared primary metric and spend/CPA guardrails) before the value path is scaled, because an offline number cannot observe how the auction responds.
+  - Acknowledges the genuine tension the team faces - only old cohorts have matured labels, and those cohorts predate current traffic - and proposes handling it explicitly (validate a short-horizon proxy against matured LTV on old cohorts, model the maturation curve, or use a delayed-feedback formulation) rather than pretending 21-day labels suffice.
+must_mention_any:
+  - [matur, immature, not matured, partial label]
+  - [180-day, 180 day, 21-day, 21 days, full horizon]
+  - [calibration-in-the-large, calibration in the large, calibration slope, dollar calibration, calibrated in dollars]
+  - [out-of-time, out of time, holdout of matured, older cohorts]
+  - [live test, geo split, geo holdout, randomi, incrementality]
+  - [blocker, do not go live, not ready, gate]
+forbidden_behaviors:
+  - Endorses the go-live, or treats the mean-predicted vs mean-actual agreement as evidence of calibration.
+  - Cites R-squared 0.62 or Spearman 0.71 as evidence that dollar magnitudes are correct.
+  - Recommends only "monitor closely after launch" instead of blocking the value path until matured-label evaluation exists.
+  - Misses that the training labels are also censored, treating this purely as an evaluation-window problem.
+forbidden_patterns:
+  - '(R.?\^?2|R.squared)[^.\n]{0,20}(of )?0\.62[^.\n]{0,50}(is|indicates|shows|suggests)[^.\n]{0,30}(strong|good|solid|acceptable)'
+  - '(ready|safe|fine|no reason not) (to|for) (go|going) live'
+  - '(spearman|rank correlation|R.?\^?2)[^.\n]{0,50}(confirms|shows|is evidence|means)[^.\n]{0,40}calibrat'
+  - 'mean predicted[^.\n]{0,60}mean actual[^.\n]{0,50}(so|therefore|which means)[^.\n]{0,40}(calibrat|well[- ]calibrated|fine)'
+  - '(launch|go live|turn (it )?on)[^.\n]{0,40}and (monitor|watch)[^.\n]{0,40}(closely|carefully)'
+required_severity: blocker
+notes: |
+  A correct answer's first move is that a 21-day-old cohort cannot carry a 180-day label,
+  so every holdout number answers a different question; it then turns the user's own
+  calibration argument against itself, extends the censoring point to the training labels,
+  separates ranking from dollar calibration, specifies the matured out-of-time holdout and
+  the per-segment calibration evidence required, reports the production gate as unmet with
+  the flat $120 remaining in force, and requires a live randomized split before scaling.
+  A plausible-but-wrong answer says "21 days is a bit short, consider a longer holdout" but
+  still calls the model promising, or accepts mean-predicted vs mean-actual as calibration
+  evidence, or approves launch with monitoring.

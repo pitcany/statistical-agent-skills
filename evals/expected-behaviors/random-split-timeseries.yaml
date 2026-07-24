@@ -27,8 +27,8 @@ forbidden_patterns:
   - '(random(ly)?|shuffled?)[- ]?(split|sampling|assignment)[^.\n]{0,50}(is|are|remains|would be) (fine|acceptable|okay|ok|appropriate|valid|reasonable)'
   - '(keep|retain|leave|stick with)[^.\n]{0,40}shuffle\s*=\s*True'
   - '(recommend|suggest|use|try)[^.\n]{0,50}KFold\([^)]{0,40}shuffle\s*=\s*True'
-  - '6\.2%?[^.\n]{0,40}(beats|better than|vs\.?)[^.\n]{0,20}19%?[^.\n]{0,40}(so|therefore|hence)'
-  - '(safe|fine|reasonable|justified) to (cut|reduce)[^.\n]{0,40}safety stock'
+  - '6\.2%?[^.\n]{0,40}(is|represents|shows) a (real|genuine|large|substantial) improvement'
+  - '(it is|this is|would be|it would be) (safe|fine|reasonable|justified) to (cut|reduce)[^.\n]{0,40}safety stock'
 required_severity: blocker
 notes: |
   A correct answer names the estimand (28-day-ahead units per SKU-DC, feeding a service

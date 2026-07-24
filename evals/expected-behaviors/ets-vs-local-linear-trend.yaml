@@ -1,0 +1,47 @@
+id: ets-vs-local-linear-trend
+skill: time-series-forecasting
+polarity: positive
+summary: A model-class question that must be answered by reasoning about the 13-week horizon, trend damping, uncertainty propagation and the structural break - not by comparing model names or in-sample AIC.
+
+must_identify:
+  - Refuses to answer on "which model is more principled" and re-frames the choice around the forecast target and the decision - 13-week-ahead weekly net revenue feeding an inventory buy covering weeks 13-26, where the quantity that matters is the predictive distribution (a service-level quantile of cumulative demand over the covered weeks), not the point forecast.
+  - Notes that ETS with additive damped trend and a local linear trend model are both linear Gaussian state-space models with overlapping representations, so "state-space is more principled" is not a decision criterion; the difference that matters is the trend specification and how its uncertainty propagates.
+  - Reasons explicitly about horizon and trend behaviour - an undamped stochastic slope extrapolates the recent ~1.1%/week slope linearly for 13 steps and its forecast variance grows superlinearly in h (level plus accumulated slope innovations), producing both a level forecast and an interval that can be implausible at h=13; damping (the Ad in ETS, or a slope AR coefficient below 1 in the state-space model) is the safer default at this horizon and should be selected empirically rather than assumed.
+  - Rejects full-sample AIC as the selection criterion - it is a one-step-ahead in-sample fit criterion, it is not comparable across models with different differencing/likelihood conventions, and it says nothing about h=13 accuracy or interval coverage.
+  - Prescribes rolling-origin backtesting at exactly h=13 (and over the cumulative weeks 13-26 window the buy covers), scoring point error AND interval coverage / pinball loss at the service-level quantile, with a seasonal-naive benchmark, as the thing that actually decides the model.
+  - Requires the week-96 level shift to be handled explicitly in either model - an intervention/step dummy, or restricting the estimation window - and states the consequence if it is not - the level is mis-estimated and, more importantly, the residual variance is inflated by a one-off event, widening every interval and biasing the trend estimate.
+  - Handles seasonality realistically - 182 weeks is about 3.5 cycles of a period-52 seasonal, too few to estimate 51 free seasonal states reliably; recommends Fourier terms (a small number of harmonics) plus regressors instead, and warns that the weeks 46-51 peak is where the buy decision is most exposed.
+  - Uses the known promo calendar as a regressor - it is available at forecast time, so it belongs in the model as a known future input rather than being absorbed into the trend.
+must_mention_any:
+  - [13-week, 13 week, h=13, thirteen-week, horizon]
+  - [damped, damping, phi, dampen]
+  - [rolling origin, backtest, time-series cross-validation, out-of-time, walk-forward]
+  - [interval, coverage, quantile, prediction interval, predictive distribution, service level]
+  - [level shift, structural break, week 96, 3PL, intervention, step dummy]
+  - [fourier, harmonic, 52, seasonal cycles, three and a half, 3.5 cycles]
+  - [promo calendar, known future, regressor, exogenous]
+forbidden_behaviors:
+  - Picks a model on the basis of the name, popularity, or the "more principled" framing, or on full-sample AIC alone.
+  - Opens with library/API instructions (imports, constructor arguments, pip installs) before establishing what is being forecast, at what horizon, and for what decision.
+  - Ignores the week-96 level shift, or the fact that 3.5 seasonal cycles is thin for a period-52 seasonal component.
+  - Discusses only point accuracy and never the predictive distribution, despite an inventory decision that is a quantile decision.
+  - Marks anything a blocker when no forecast has yet been produced and nothing has been deployed.
+forbidden_patterns:
+  - '\A[\s\S]{0,300}(pip install|import statsmodels|from statsmodels|ExponentialSmoothing\(|UnobservedComponents\()'
+  - '(state[- ]space|local linear trend|LLT)[^.\n]{0,50}(is|are) (strictly )?(better|superior|more principled|more rigorous|the right choice)\b'
+  - '(AIC|BIC)[^.\n]{0,50}(favou?rs|prefers|selects)[^.\n]{0,40}(so|therefore|hence|use)'
+  - '(use|go with|choose) (ETS|the local linear trend)[^.\n]{0,60}(because|since) it is (more )?(standard|popular|common|widely used|simpler to)'
+  - '\[blocker\]'
+required_severity: medium
+notes: |
+  A correct answer treats this as a design question - it names the forecast target and the
+  inventory decision first, explains that the real choice is damped versus undamped trend
+  at h=13 and how each propagates uncertainty, refuses AIC and the "principled" argument,
+  insists the week-96 break and the thin seasonal history be handled, folds the known promo
+  calendar in as a regressor, and settles the choice with a rolling-origin backtest at h=13
+  scored on interval coverage as well as point error. Severity should top out around medium
+  or high (an unhandled structural break is a specific, named bias); calling anything a
+  blocker over-claims, since nothing has been produced or deployed.
+  A plausible-but-wrong answer recites the properties of ETS and structural time-series
+  models, declares one "more flexible" or defers to AIC, and gives statsmodels code -
+  without ever mentioning the 13-week horizon, the level shift, or interval coverage.

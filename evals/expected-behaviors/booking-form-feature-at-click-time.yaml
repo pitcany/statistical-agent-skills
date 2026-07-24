@@ -22,7 +22,7 @@ forbidden_behaviors:
   - Proposes imputing the booking-form fields at serving time as a fix, as if a default value restored the evaluated model.
   - Flags prior_bookings_12m as leakage despite the explicit as_of_date = DATE(c.click_ts) join, without evidence about how user_history is built.
 forbidden_patterns:
-  - '(ship|deploy|go live|switch)[^.\n]{0,40}(as[- ]is|as written|on monday|without change)'
+  - '(you can|we can|safe to|fine to|ok to|okay to|recommend) (ship|deploy|go live|switch)[^.\n]{0,50}(as[- ]is|as written|on monday|without change)'
   - '\b(impute|default|fill)\w*[^.\n]{0,50}(at serv|in production|at scoring)[^.\n]{0,40}(solves|fixes|resolves|handles) (this|the (issue|problem|leak))'
   - '(AUROC|auc)[^.\n]{0,20}0\.93[^.\n]{0,50}(so|therefore|which (means|shows)|confirms)[^.\n]{0,40}(strong|good|excellent|solid)'
   - '(the )?(pipeline|feature job|design) (is|looks) (sound|fine|correct|reasonable)'

@@ -162,6 +162,60 @@ Observed behavior — the response:
 This is the behavior the `statistical-proof-review` skill is built to produce, and the
 refusal to fabricate held under a prompt engineered to invite it.
 
+### 4d. Attempted false-positive test — the test case was defective, and the library caught it
+
+**This test did not measure what it was designed to measure, and the failure is
+instructive enough to record in full.**
+
+The intent was to submit a deliberately *sound* fraud-model validation design and check
+that the library did not manufacture defects: out-of-time split (Jan–Sep train, Oct test),
+a 7-day embargo gap sized to chargeback posting latency, "a point-in-time feature store
+keyed on transaction timestamp", group-split by `merchant_id`, and scaler/imputer fit inside
+CV folds via a `sklearn` `Pipeline`.
+
+The response returned blockers. On inspection **the response was right and the test case was
+wrong.** Three findings, none of which were intentionally planted:
+
+1. **The embargo gap is sized to the wrong quantity.** A gap between end-of-train and
+   start-of-test does not fix immature labels at the *trailing edge of the test window* —
+   the last ~6 days of October are under-labeled unless the label snapshot was pulled after
+   the maturity window closed, biasing precision down monotonically through the window. What
+   a purge gap actually protects against is a test row's feature lookback overlapping
+   training labels, so it must be sized to `max(label horizon, longest feature lookback)` —
+   7 days purges nothing if any 30/60/90-day entity aggregate exists.
+2. **The "6 days" maturity claim is domain-implausible.** Card-network dispute rights run
+   ~120 days; 6 days is posting lag after a dispute is filed, not maturity. If true maturity
+   is 45–120 days, the Oct holdout is under-labeled relative to a matured Jan–Sep training
+   set — two different label definitions being compared.
+3. **A point-in-time store keyed on *transaction* timestamp is not point-in-time correct.**
+   This is the sharp one. Keying the as-of join on event time returns every event whose event
+   time precedes the transaction, including chargebacks that had not yet *posted* at the
+   scoring moment. The response stated the ordering explicitly — a chargeback's value is
+   written at `posted_at = txn_ts + lag` while the decision occurs at `txn_ts`, therefore
+   `T_w > T_d` — and concluded the join must be on `available_at`/`posted_at`, not event
+   time. It then produced the availability table classifying merchant/BIN historical
+   chargeback-rate features and target encodings as blockers, with everything marked
+   `inferred` because no schema was supplied.
+
+The phrase "keyed on transaction timestamp" was written into the prompt as shorthand for
+"correct point-in-time joins". It is in fact a real bi-temporal defect, and one that occurs
+constantly in production fraud systems.
+
+Consequences recorded honestly:
+
+- This is **not** evidence of false-positive resistance. That property remains untested
+  against a model.
+- It **is** evidence that the library reaches genuinely subtle defects — the bi-temporal
+  event-time vs available-time distinction was not surfaced by any of the three prior tests
+  and is not stated verbatim in any skill body; it was derived from the decision-timestamp
+  procedure.
+- It is a live demonstration of the risk `docs/evaluation-methodology.md` names explicitly:
+  *"a 'negative' case with a subtle real flaw is a broken case, not a hard one."* The author
+  of a negative case must verify soundness at least as carefully as the reviewer will. The
+  two negative cases in `evals/cases/` (`sound-temporal-split`,
+  `sound-cluster-randomized-test`) require exactly this scrutiny before their results can be
+  trusted, and are flagged accordingly in the limitations.
+
 ## 5. Command invocation
 
 The 8 commands are registered and resolve to the repository files through their symlinks.

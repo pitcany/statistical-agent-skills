@@ -1,0 +1,43 @@
+id: bucketing-calibrated-predictions
+skill: adtech-value-optimization
+polarity: positive
+summary: A correctly calibrated continuous pLTV is destroyed at the last hop by bucketing to interval midpoints on a right-skewed distribution, with the top bucket additionally capped.
+
+must_identify:
+  - States that the midpoint of a bucket is not the expectation of value within that bucket, and that under right skew (mean $186 vs median $92) the within-bucket distribution is also right-skewed, so the midpoint sits below the within-bucket mean in every tier - the transform destroys the calibration the isotonic step established.
+  - Gives the correct representative - the mean of realized value within each bucket, computed on matured cohorts - and notes that using conditional means preserves calibration-in-the-large by construction, whereas midpoints do not.
+  - Identifies the top bucket as the worst case and explains why - T1 spans the p80 to max range where the tail runs from roughly $431 at p90 to $11,200, so its midpoint (further truncated at the p99) understates the segment's true mean by a large factor; the consequence is systematic underbidding on exactly the highest-value traffic the model exists to find, i.e. tROAS will starve the segment the whole project targeted.
+  - Treats the p99 cap as a separate defect - a cap installed for bid safety silently truncates the top decile's contribution; if outlier protection is wanted it should be a winsorization decided on the realized-value distribution with the effect on the dispatched mean measured and stated, not a quiet min() inside the mapping.
+  - Notes that bucketing discards within-bucket ordering entirely and creates boundary artifacts - two nearly identical leads land in different tiers with different dispatched dollars.
+  - Questions the premise - Google Ads offline conversion uploads accept continuous values, so the sales reporting requirement can be met by bucketing in the BI layer while dispatching the continuous calibrated value; bucketing the dispatched number needs a justification that has not been given.
+  - Requires verification after any change - recompute calibration-in-the-large on the DISPATCHED values (not just the model output), overall and per channel/campaign, since the transform is where calibration is currently lost.
+must_mention_any:
+  - [midpoint]
+  - [within-bucket mean, bucket mean, mean of realized, conditional mean, average realized value]
+  - [right-skew, skew, heavy tail, long tail, tail]
+  - [underbid, under-bid, understate, undervalue, starve, too low]
+  - [top bucket, T1, highest tier, top tier]
+  - [continuous value, dispatch the continuous, bucket only for reporting, no need to bucket, BI layer, reporting layer]
+forbidden_behaviors:
+  - Says midpoints are acceptable, or that the difference is immaterial.
+  - Recommends the bucket median (or the midpoint of realized values) as the representative without noting it still fails to reproduce the within-bucket mean and therefore breaks calibration-in-the-large.
+  - Treats the p99 cap as prudent risk management without stating what it truncates and by how much.
+  - Congratulates the upstream calibration work and stops, without noticing that the final dispatched number is what the platform consumes.
+forbidden_patterns:
+  - 'midpoint\w*[^.\n]{0,60}(is|are|remains|would be) (fine|fair|reasonable|acceptable|a (good|sensible|standard)|the standard|close enough)'
+  - '(does not|doesn.t|won.t) (really )?(matter|make (much|a) difference)'
+  - '(the )?(cap|capping)[^.\n]{0,50}(at|to)[^.\n]{0,30}(p99|99th)[^.\n]{0,50}(is|seems) (sensible|prudent|wise|good practice|fine)'
+  - '(use|take) the (bucket |within-bucket )?median[^.\n]{0,50}(as the )?(representative|value to send|uploaded value)'
+required_severity: high
+notes: |
+  A correct answer follows the value path to its last hop and shows the defect lives there -
+  midpoint representatives on a right-skewed distribution understate every bucket's
+  conditional mean, catastrophically so in the open-ended top tier that the p99 cap further
+  truncates - with the consequence stated in spend terms (tROAS underbids the best traffic).
+  It prescribes the within-bucket mean of realized matured value, treats the cap as its own
+  decision requiring a measured effect, questions whether bucketing the dispatched value is
+  needed at all given continuous values are supported, and requires calibration to be
+  re-verified on the dispatched numbers.
+  A plausible-but-wrong answer praises the isotonic calibration, says bucketing loses "some
+  granularity", and calls the midpoint a reasonable approximation - missing that the loss is
+  systematic and one-directional rather than a granularity trade.

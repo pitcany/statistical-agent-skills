@@ -1,0 +1,49 @@
+id: sound-temporal-split
+skill: leakage-auditor
+polarity: negative
+summary: A correctly constructed out-of-time split with an embargo exceeding the label horizon, as-of feature computation, entity-grouped tuning folds and in-fold preprocessing; the review must confirm it and not manufacture a defect.
+
+must_identify:
+  - Confirms that no leakage is identified in the supplied material, and states plainly that the design is sound in the audited respects rather than hedging into an implied defect.
+  - Enumerates what was audited so the clean verdict is evidenced - feature source and write time, split ordering, embargo versus label horizon, entity grouping, preprocessing placement, and test-set discipline.
+  - States the time ordering explicitly - every feature value is computed from events with event_ts strictly before as_of_date and written at 23:00 on the last day of the prior month, while the decision timestamp is 00:00 on the 1st, so all features are available at scoring time.
+  - Verifies the embargo arithmetic rather than accepting the claim - the 60-day label horizon of the last training as_of_date (2025-06-01) closes by 2025-07-31, and the first test as_of_date is 2025-10-01, so no training label window overlaps any test feature window.
+  - Confirms the split respects time ordering for a prospective task, and notes correctly that an account legitimately appearing in both the train and test PERIODS is not entity leakage here, because the deployed model scores previously-seen accounts at new as_of dates - that is the intended use; grouping matters for the tuning folds, and GroupKFold on account_id handles it.
+  - Confirms preprocessing (imputation, scaling, target encoding) is fit inside each fold via the Pipeline, so no fold statistics or label information cross the boundary, and that target encoding - the most dangerous of the three - is therefore correctly placed.
+  - Confirms test-set discipline - the test period was scored once after tuning, so the reported AUROC is not selection-inflated.
+  - Notes the metrics are consistent with a leak-free model on a hard problem - AUROC 0.74 and PR-AUC 0.21 against a 4.8% base rate are unremarkable rather than suspicious, which is corroborating (not proving) evidence.
+  - Raises any residual uncertainty as an explicit question rather than a finding - e.g. confirmation that account_snapshot_monthly is genuinely append-only and never backfilled or corrected in place, that the 23:00 job never picks up late-arriving events stamped before as_of_date, and that no feature in the snapshot is itself derived from a downstream model or artifact refreshed later - each tagged unverifiable.
+must_mention_any:
+  - [no leakage, sound, no blocker, clean, does not appear to leak, nothing that leaks]
+  - [embargo, gap, 60-day, 60 day, label horizon, label window]
+  - [as-of, as_of, point-in-time, point in time, snapshot, event_ts]
+  - [groupkfold, account_id, entity, grouped, group]
+  - [pipeline, inside each fold, within the fold, fit inside]
+  - [append-only, append only, backfill, late-arriving, late arriving, unverifiable, question]
+forbidden_behaviors:
+  - Reports leakage, a blocker, or a high-severity finding anywhere in the audited design.
+  - Calls the accounts appearing in both the train and test periods entity leakage, despite the out-of-time split and the fact that the deployed model scores returning accounts.
+  - Objects to target encoding as such, despite it being fit inside the fold.
+  - Recommends a random or shuffled split, or nested CV, as an improvement over the out-of-time design.
+  - Manufactures a defect to appear thorough - e.g. asserting the embargo is too short, or that the label window overlaps, without doing the arithmetic that shows it does not.
+  - Presents a genuinely unverifiable item (append-only guarantee, late-arriving events) as an observed finding instead of a question.
+forbidden_patterns:
+  - '(there is|this (has|contains)|i (found|identified|see)|we have)[^.\n]{0,30}\b(target|temporal|entity|aggregate|label) leakage'
+  - '\[blocker\]'
+  - '(the )?(split|design|validation|pipeline) (is|appears|looks) (invalid|unsound|leaky|flawed|compromised)'
+  - '(random|shuffled|k-?fold)[^.\n]{0,30}split[^.\n]{0,50}(would|should|could) (be better|work|improve|help)'
+  - '(same|repeated) accounts?[^.\n]{0,60}(train|training)[^.\n]{0,30}(and|&)[^.\n]{0,20}test[^.\n]{0,40}(is|are|constitutes) (entity )?leakage'
+  - 'embargo[^.\n]{0,50}(is|are)[^.\n]{0,20}(too short|insufficient|inadequate)'
+required_severity: none
+notes: |
+  A correct answer returns a clean verdict with evidence - it walks the write path
+  (event_ts < as_of_date, snapshot written before the 1st-of-month decision timestamp),
+  does the embargo arithmetic (last training label closes 2025-07-31, first test as_of is
+  2025-10-01), confirms in-fold preprocessing and grouped tuning folds and single-use test
+  period, notes the modest metrics are consistent with no leak, and parks the genuinely
+  unknowable items (append-only guarantee, late-arriving events, snapshot columns sourced
+  from later-refreshed artifacts) as explicit questions tagged unverifiable.
+  A plausible-but-wrong answer invents a finding to look thorough - typically calling
+  repeated accounts across the periods "entity leakage", or flagging target encoding on
+  reflex, or asserting the embargo is inadequate without checking the 60-day horizon
+  against the three-month gap.

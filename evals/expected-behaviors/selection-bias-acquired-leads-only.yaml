@@ -1,0 +1,46 @@
+id: selection-bias-acquired-leads-only
+skill: adtech-value-optimization
+polarity: positive
+summary: The training data covers only traffic the incumbent tCPA policy bought, yet the model is to be used for suppression and for expansion into never-bought segments - the two uses that are furthest off support.
+
+must_identify:
+  - States that outcomes exist only for impressions/clicks the current tCPA policy won, so the training support is the incumbent policy's footprint; nothing in the data describes traffic the policy never bought.
+  - Identifies step 3 (expansion into new keyword themes and audience segments) as direct off-support extrapolation - the model is being asked to score exactly the region with no training examples - and states this as the largest single risk in the plan.
+  - Explains why stable out-of-time AUROC does not address this - month-over-month stability is measured on the same policy footprint, so it demonstrates stationarity within the selected slice, not generalisation outside it; ranking quality inside the bought traffic is not evidence about unbought traffic.
+  - Identifies the absence of bid/decision logging and randomisation as the binding practical problem - with no propensities and no exploration, off-policy evaluation (IPS, self-normalised IPS, doubly robust) cannot be performed at all, so there is no offline way to estimate what the new policy would do.
+  - Describes the feedback loop - dispatched values reshape what the platform buys, the new buy becomes the next training set, and the process can converge to a narrow self-confirming segment while offline metrics continue to look healthy.
+  - Treats suppression as a distinct decision from low value - withholding conversions for the bottom two deciles removes those clicks from the platform's learning set and from future training data, censoring precisely the region needed to validate or correct the model; recommends sending a small positive value instead unless suppression is intended for a documented reason.
+  - Prescribes the mitigations concretely - carve out an exploration/randomised-holdout share of spend, start logging the bidding decisions and any randomisation so propensities exist, run a geo or campaign-level randomised split with a pre-declared primary metric and spend/CPL guardrails before scaling, and monitor drift in the training population after launch.
+  - Recommends sequencing - the ranking model may be used to reweight within the current footprint under a live randomised test first; expansion into new segments should be a separate, explicitly exploratory budget with its own measurement, not justified by the existing AUROC.
+  - States the direction of the spend error where it can - unknown for the new segments (no support), plausibly optimistic overall since the offline metric is computed on the population the policy is best at buying.
+must_mention_any:
+  - [selection bias, endogenous, off-support, off support, extrapolat, support of the training data]
+  - [exploration, randomi, holdout traffic, epsilon, explore budget]
+  - [feedback loop, self-reinforcing, self-confirming, closed loop]
+  - [propensity log, policy log, off-policy, IPS, inverse propensity, doubly robust, logged bid]
+  - [suppress, withhold, zero conversion, removes them from]
+  - [geo split, geo holdout, live test, incrementality, randomised test, randomized test]
+forbidden_behaviors:
+  - Green-lights the rollout, or approves the expansion step on the strength of the offline AUROC.
+  - Treats stable month-over-month AUROC as evidence of generalisation to unbought traffic.
+  - Recommends collecting more of the same data as the remedy.
+  - Treats suppression and low positive value as interchangeable.
+forbidden_patterns:
+  - 'AUROC[^.\n]{0,30}0\.78[^.\n]{0,60}(so|therefore|indicates|shows|suggests|means)[^.\n]{0,40}(generali[sz]|holds up|will transfer)'
+  - '(stable|consistent)[^.\n]{0,40}(across|month)[^.\n]{0,50}(so|therefore|which (means|suggests))[^.\n]{0,40}generali[sz]'
+  - '(safe|fine|reasonable|sensible) to (roll ?out|expand|apply|extend)[^.\n]{0,50}(new|all|unseen) (segments|campaigns|keywords|audiences)'
+  - '(collect|gather) more (data|leads)[^.\n]{0,50}(will|would) (fix|solve|resolve|address)[^.\n]{0,30}(the )?(selection|bias|problem)'
+  - '\bgreen ?light\b[^.\n]{0,20}(yes|approved|go)'
+required_severity: blocker
+notes: |
+  A correct answer separates the three proposed uses and shows they sit at increasing
+  distance from the data's support, with expansion into never-bought segments having no
+  support at all; it explains why stable AUROC on the bought slice is not evidence about
+  the unbought one, notes that without logged decisions or randomisation there is no
+  off-policy estimator available, describes the training-data feedback loop, treats
+  suppression as an information-destroying choice distinct from low value, and requires
+  exploration budget plus a geo/campaign randomised test with guardrails before any spend
+  change scales.
+  A plausible-but-wrong answer flags "some selection bias, monitor after launch", or
+  approves steps 1 and 2 while calling step 3 ambitious, without saying that no offline
+  evidence about the new segments can exist and that no propensities are being logged.

@@ -1,0 +1,42 @@
+id: valid-proof-missing-regularity
+skill: statistical-proof-review
+polarity: positive
+summary: The argument's logic is valid but the dominated convergence step is invoked without exhibiting a dominating integrable function; the model must name that specific missing hypothesis without condemning the proof as false.
+
+must_identify:
+  - Identifies the one missing hypothesis precisely - the dominated convergence theorem requires an integrable envelope, i.e. a function G_env with E_{P_0}[G_env(X)] < infinity such that |h(x, t)| <= G_env(x) for P_0-almost every x and all t in a neighbourhood of theta_0 (or all t in Theta), and no such function is exhibited or assumed anywhere in the setup.
+  - States why the domination must be uniform over t in a neighbourhood rather than pointwise per n - the sequence theta_hat_n(omega) is not known in advance, so a bound depending on n is useless; the envelope has to hold over a set that eventually contains the whole tail of the sequence, which the a.s. convergence guarantees for any fixed neighbourhood of theta_0.
+  - Explains the consequence of the omission with a mechanism - pointwise convergence of integrands alone does not imply convergence of integrals (mass can escape), so as written the final display is asserted rather than proved; a standard escaping-mass example suffices to show the implication is not automatic.
+  - Confirms the parts that are correct so the verdict is localised - fixing omega and treating theta_hat_n(omega) as a deterministic sequence is a legitimate and clean device, the joint measurability plus a.e. continuity gives the pointwise convergence of integrands and keeps everything measurable, and the "arbitrary point of an almost-sure set" conclusion is valid.
+  - Classifies the result as an incomplete proof / missing regularity condition rather than a false lemma - the statement is true under the standard additional envelope assumption, and the fix is to add that hypothesis (or note that h bounded on Theta, or a local envelope of the Wald / uniform-LLN type, suffices).
+  - Gives the concrete repair - add to the hypotheses "there exists a neighbourhood N of theta_0 and G_env in L^1(P_0) with sup over t in N of |h(x,t)| <= G_env(x)", and cite that this is exactly the condition under which the interchange is justified; alternatively establish uniform integrability of the family {h(X, t)} for t in N, which yields the same conclusion.
+must_mention_any:
+  - [dominating function, dominating integrable, envelope, integrable bound, integrable majorant]
+  - [dominated convergence, DCT]
+  - [neighbourhood, neighborhood, uniformly in t, for all t near, locally, sup over t]
+  - [otherwise valid, logic is sound, rest of the argument, remainder is correct, incomplete rather than, gap rather than, not false, true under]
+forbidden_behaviors:
+  - Declares the lemma false, the proof wrong, or the conclusion incorrect, rather than incomplete.
+  - Claims the fixing-omega device is invalid, or that theta_hat_n being random makes the argument circular, or invents other defects not present in the setup.
+  - Says dominated convergence cannot be used here at all.
+  - Proposes Fatou's lemma as the repair without noting it delivers only an inequality, not the required convergence.
+  - Demands hypotheses already supplied in the setup (compactness of Theta, joint measurability, a.e. continuity of h in t, a.s. convergence of theta_hat_n) as if they were missing.
+forbidden_patterns:
+  - '(the )?proof is (false|wrong|invalid|incorrect|broken)\b'
+  - '(the )?(lemma|claim|conclusion|statement|result) is (false|wrong|incorrect|invalid)\b'
+  - '(cannot|can ?not|can.t) (be |legitimately )?(use|apply|invoke)\w* (the )?dominated convergence[^.\n]{0,40}(here|at all|in this setting)'
+  - '(use|apply) (Fatou|the monotone convergence theorem)[^.\n]{0,60}(instead|to fix|as the fix)(?![^.\n]{0,80}(inequality|only gives|one direction))'
+  - '(fixing|conditioning on) (a sample point|omega)[^.\n]{0,60}(is|are|makes it) (invalid|not valid|illegitimate|circular)'
+required_severity: medium
+notes: |
+  A correct answer says the argument is logically sound and the device of fixing a sample
+  point is fine, then isolates exactly one gap - dominated convergence is invoked with no
+  dominating integrable function, and the domination has to hold uniformly over a
+  neighbourhood of theta_0 because the sequence theta_hat_n is not known in advance. It
+  frames this as a missing hypothesis to be added (a local integrable envelope, or bounded
+  h, or uniform integrability), notes the lemma is true once that is assumed, and does not
+  manufacture further defects. Severity medium; a well-argued high is defensible, blocker
+  and any verdict of "false" are failures.
+  A plausible-but-wrong answer either passes the proof as correct (missing the envelope
+  entirely), or over-reacts - declaring the lemma false, calling the omega-fixing step
+  circular because theta_hat_n is random, or demanding conditions the setup already states.
