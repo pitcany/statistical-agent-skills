@@ -148,6 +148,20 @@ statistical-agent-skills/
     └── expected-behaviors/      # grading contracts
 ```
 
+## Hosted review service (optional, paid)
+
+The skills in this repository are free, MIT-licensed, and complete on their own. If you
+do not use Claude Code and want the same 14-section review run for you, there is a paid
+hosted version at **[review.pitcananalytics.com](https://review.pitcananalytics.com)** —
+$49, upload a results chapter or notebook, report back within 24 hours, file deleted
+after delivery, 14-day refund. It is automated and says so.
+
+A full sample review of a deliberately flawed synthetic chapter:
+[review.pitcananalytics.com/sample](https://review.pitcananalytics.com/sample)
+
+Disclosure: the hosted service is run by the author of this repository. Nothing here
+depends on it.
+
 ## Documentation
 
 - [Architecture](docs/architecture.md) — why 12 skills, the shared output contract, and
