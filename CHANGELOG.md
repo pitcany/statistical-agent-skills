@@ -62,7 +62,7 @@ Initial release.
   failure modes, and two genuinely sound negative cases for false-positive resistance.
 - Documentation: `docs/skill-authoring-guide.md` (binding authoring contract),
   `docs/evaluation-methodology.md`, `docs/architecture.md`, `docs/installation.md`,
-  `docs/security.md`, `docs/source-attribution.md`, `docs/environment-audit.md`,
+  `docs/security.md`, `docs/source-attribution.md`,
   `docs/validation-report.md`, `docs/limitations-and-roadmap.md`, `README.md`,
   `CONTRIBUTING.md`.
 - MIT license.
