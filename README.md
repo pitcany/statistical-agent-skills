@@ -25,7 +25,7 @@ All skill text is original work; no third-party material was vendored
 | `statistical-proof-review` | Mathematical arguments and theorem statements | Checking a derivation or proof step by step |
 | `data-quality-audit` | Data integrity before modeling — joins, duplicates, missingness, timestamps | Fan-out suspicion, row-count drift, schema questions |
 | `production-ml-review` | Deployment readiness — training/serving skew, drift, monitoring, rollback | Pre-ship review of a model going to production |
-| `adtech-value-optimization` | Value signals sent to ad platforms — pLTV, dollar calibration, bucketing, bid feedback loops | tCPA/tROAS value models, conversion-value pipelines |
+| `adtech-value-optimization` | Predictions calibrated to dollars that then drive automated spend — pLTV and lead scores, value bucketing, censored and delayed outcomes, policy feedback loops. Ad platforms are the worked example, not the scope | A model's output becomes a bid, a conversion value, or a budget |
 
 `statistical-reviewer` is the hub: it triages and routes; the other eleven own depth in
 their area. Each skill's "When NOT to use" section names the sibling that handles the
